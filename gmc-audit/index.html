@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b5f3a"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GMC Audit"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GMC Audit Report Builder</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="icon" href="icons/icon-192.png">
+<script src="vendor/docx.umd.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mut:#667;--bd:#d5d9df;--pri:#0b5f3a;--yes:#1a7f4b;--no:#c0392b;--na:#6b7280;--sec:#eef2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mut:#9aa3ad;--bd:#343a41;--pri:#3fb27f;--yes:#3fb27f;--no:#ef6b5b;--na:#8b93a0;--sec:#232a26}}
+:root[data-theme="dark"]{--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mut:#9aa3ad;--bd:#343a41;--pri:#3fb27f;--yes:#3fb27f;--no:#ef6b5b;--na:#8b93a0;--sec:#232a26}
+*,*:before,*:after{box-sizing:inherit}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 Calibri,"Segoe UI",Arial,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+main{max-width:860px;margin:0 auto;padding:16px 14px 100px}
+h1{font-size:20px;margin:4px 0 2px}.sub{color:var(--mut);margin:0 0 14px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+label.l{font-size:12px;color:var(--mut);font-weight:600;display:block;margin-bottom:3px}
+input[type=text],textarea,select{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:8px}
+textarea{resize:vertical;min-height:60px}
+.sec{background:var(--sec);font-weight:700;padding:8px 12px;margin:14px -12px 0;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.item{padding:10px 0;border-bottom:1px solid var(--bd)}.item:last-child{border:0}
+.q{display:flex;gap:8px;margin-bottom:6px}.q b{color:var(--mut);min-width:44px;font-weight:600}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-left:52px}
+.seg button,.chip{min-width:64px;padding:7px 12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:7px;font:inherit;font-weight:600;cursor:pointer}
+.seg button.on.y{background:var(--yes);border-color:var(--yes);color:#fff}.seg button.on.n{background:var(--no);border-color:var(--no);color:#fff}.seg button.on.a{background:var(--na);border-color:var(--na);color:#fff}
+.note{margin:6px 0 0 52px;width:calc(100% - 52px)!important}
+.pick{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.pick input{width:20px;height:20px;margin-top:2px;flex:none}.pick small{color:var(--mut)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;justify-content:center;flex-wrap:wrap;z-index:5}
+.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-weight:600;cursor:pointer}.btn.p{background:var(--pri);border-color:var(--pri);color:#fff}
+.mut{font-size:13px;color:var(--mut)}.oc{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}.oc span{flex:1}.oc .tag{font-weight:700;font-size:12px}
+.rep{background:#fff;color:#111;border:1px solid var(--bd);padding:22px;font-size:14px;overflow-x:auto}
+.rep h2{text-align:center;font-style:italic;font-size:20px;margin:0 0 12px;border-bottom:1px solid #111}
+.rep table{border-collapse:collapse;width:100%;margin-bottom:14px}.rep td{border:1px solid #111;padding:5px 8px;vertical-align:top}.rep td:first-child{font-weight:700;width:90px}
+.rep h4{margin:12px 0 4px;font-size:14px}.rep .u{text-decoration:underline}.rep ul{margin:4px 0;padding-left:24px}#msg{text-align:center;font-size:13px;color:var(--mut);min-height:18px;margin-top:8px}
+</style></head><body><main><div id="app"></div></main><div class="bar" id="bar"></div>
+<script>
+const E=[
+["3.1","Buildings and floors",["All buildings, structures, fittings and fixtures in sound condition"]],
+["3.2","Lighting: Natural and Artificial",["Lighting incl. emergency lighting provided as required by risk and law","Fittings, switches, bulbs/tubes/LEDs in good order; windows and skylights clean","Lighting maintenance programme (inspect, repair, clean, test emergency lights)","Lighting and mirrors let workers and equipment see and be seen","Vehicle illumination, illuminated exit signs, reflective clothing"]],
+["3.3","Ventilation: Natural and Artificial",["Ventilation adequate and provided as determined by risk assessment","Ventilation performance monitored and included in maintenance programme","Air quality monitored for pathogens; risk controls instituted"]],
+["3.4","Sanitation, Plant Hygiene, Amenities for Personal Hygiene",["Toilets, ablutions, kitchen, canteen and food storage meet standards","Cleaning implements and sufficient waste bins available","Facilities clean; soap, towels, toilet paper provided; lockers/change rooms tidy","Kitchen/canteen vermin free; deep cleaning and pest control programme","No food in change rooms, lockers or workplace; food eaten in authorised areas","Regular facility inspections; food preparation health risks assessed"]],
+["3.5","Pollution and Environmental Degradation Control",["Pollution prevention opportunities identified; control systems in place","Pollution monitoring and warning systems established","Spill containment equipment provided, maintained and accessible","Environmental degradation risks (incl. GHG) considered, monitored and controlled","Emergency-situation pollution and degradation considered","Areas needing rehabilitation identified and rehabilitated; programmes authorised"]],
+["3.6","Aisles, Storage and Keep Accessible Areas Demarcated",["Floors and areas demarcated or signposted","Demarcation adhered to","Demarcation under electrical switchgear and critical valves","Barricading provided to restrict access to hazardous areas"]],
+["3.7","Good Stacking and Storage Practices",["Competent, experienced persons assigned for safe stacking","Stacks correctly erected as per standards","Stacks bonded to prevent tumbling","All stacks in authorised areas only","No unstable or hazardous stacks","Stacks erected and broken down under supervision and to standard","Access to working on stacks controlled","Approved system of racking","No racks overloaded or showing stress (incl. sagging)","Periodic inspections of racking done","Safe Working Load (SWL) displayed for racking systems","Cupboards, shelves, racks neat and tidy","Placement of articles is not hazardous","Articles at elevated heights are stable"]],
+["3.8","Factory and Yard: Tidy",["Superfluous materials removed","Redundant material/equipment sorted and stored in designated area","Maintenance and repair work carried out in a tidy and safe manner","All workstations kept tidy","Racks, shelves and cupboards free of superfluous material and tidy","Quarantine area in place and access managed (e.g. stripped asbestos)","Yard and factory included in periodic inspections"]],
+["3.9","Waste Management",["Waste inventory with classification, hazard rating and contractor; kept up to date","Permit conditions identified; approved recyclers and disposal records kept","Hazardous and general waste separated; landfill only as last option","Bins sufficient, lidded, sound and marked; removal schedule followed; vector control","On-site waste handling to standard; spillage risks assessed","Hazardous waste containers labelled (contents, hazard, date); employees know labels","Hazardous waste storage demarcated, controlled, impermeable, roofed, bunded","Medical waste separated from sharps; spill materials near storage; damaged containers disposed safely"]],
+["3.10","Colour Coding: Plant Equipment and Pipelines",["Uniform colour code applied throughout","Colour code key boards provided and displayed"]],
+["3.11","Plant and Equipment Maintenance",["Plant requiring maintenance identified by criticality and reliability","Type and frequency of maintenance established","Maintenance application monitored","Abnormal wear and tear identified and investigated"]],
+["3.12","Machine Guarding",["Machines that cannot be guarded are enclosed","Nip points, conveyors (incl. underneath), V-drives and chain drives guarded","Rotating/oscillating levers, cams, gears and shafts guarded","Moving parts within normal reach guarded; guards easy to remove and replace","Protection/electronic guarding devices functional and maintained","Guard inspections done by experienced or qualified staff"]],
+["3.13","Lock-Out Systems",["Written lock-out procedure available, updated, covers all energy sources","Zero-potential check before work; locks, keys and devices labelled and controlled","Staff trained; risk of computer control overriding lock-out assessed","Facilities locked out and tagged; approved devices; positive isolation; physical lock","All main switches accessible (even when circuits are locked out)"]],
+["3.14","Labelling of Electrical Switchgear and Critical Valves",["Switchgear permanently labelled, panels marked front and rear, standardised","Electrical installation diagrams available, correct and up to date","Critical valves identified and marked; flow and open/shut direction indicated","Crew know position and function of critical valves; effectiveness verified in maintenance","Piping installation diagrams available and up to date"]],
+["3.15","Ladders, Elevated Platforms, Stairs and Scaffolding",["Ladders, stairs and ramps comply with standards; stairways have handrail, landings clear","Ladders marked, register up to date, inspection responsibility assigned, deviations actioned","Scaffolding erected, altered, dismantled to standard by competent person; register kept","Scaffolding needing repair not used; non-compliance actioned promptly","Toe-boards fitted; fall prevention and arrest requirements complied with","Elevated surfaces/storage strong enough, with handrails and toe-boards"]],
+["3.16","Lifting Machines and Lifting Tackles",["Operators and assistants trained for the machine type (incl. hand signals)","Machines/tackles comply with standards, identified, marked and on register","Inspected and tested by designated competent person; deviations actioned","Maximum mass loads clearly marked; hook safety latches in place and functional","Safe access and escape for elevated operation; lift plans developed and signed"]],
+["3.17","Pressure Equipment and Compressed Gas Cylinders",["Pressure equipment identified, on register with certificates, within standards","Inspections/tests on due date by qualified person; test records kept","Relief valves set, on register, locked/sealed, vent to safe area","Pressure gauges red-lined; max work pressure known; calibration displayed","Gas cylinders stored correctly; installations safe and on register; flashback arrestors fitted","Pneumatic tools on register and checked; hydraulic risks assessed and maintained"]],
+["3.18","Hazardous Chemical Substances (HCS) Control",["Chemical inventory with hazard class, up to date; only authorised substances on site","Competent person designated to coordinate HCS","MSDS available, compliant, accessible and up to date","Users trained on hazards, procedures and PPE; leak detection where required","Objectives set to eliminate or reduce toxic/persistent substances"]],
+["3.19","Motorised Equipment: Checklists, Licensing",["Vehicles roadworthy, comply with specifications, in maintenance programme","Checklists available, correctly and regularly completed; deviations actioned","Drivers/operators licensed, trained and permitted; licence validity monitored","Routing standards, emergency equipment and fatigue management in place","Loads secure; loading procedures followed"]],
+["3.20","Portable Electrical Equipment",["Single and three phase equipment, cords, plugs and switches in good condition","Items identified, on register, inspected by competent person; faulty items removed","Step-down transformers/low voltage used in wet or steel-structure environments"]],
+["3.21","Earth Leakage (E/L) Relays: Use and Check",["All socket outlet circuits protected by E/L, GFI or RCD; portable units used where needed","Units on register, tested regularly by competent person, trip readings recorded, faults actioned"]],
+["3.22","General Electrical Installations and Machinery in Hazardous Locations",["Wiring safe with valid certificate of compliance from competent person","Switchgear and sub-stations restricted and locked; no unsafe temporary wiring or cords","Switches, plugs, fuse boxes, distribution boards sound; earthing checked","Hazardous areas zoned and classified; equipment registered and inspected by competent person"]],
+["3.23","Hand Tools (hammers, chisels and trolleys)",["Hand tools, trolleys and wheelbarrows in good condition; standard for home-made tools","Explosive powered tools identified; storage and use requirements met","Supervisors carry out regular checks"]],
+["3.24","Ergonomics",["Work practice ensures good posture, comfort, workstation height and reach","Work flows ergonomically designed; valves, switches, ladders accessible","Job rotation/rest periods considered; access for disabled persons","Safe manual handling and lifting techniques applied"]],
+["3.25","Personal Protective Equipment (PPE)",["PPE requirements identified and appropriate to hazard and risk","PPE provided, maintained, in acceptable condition; issue records kept","PPE worn correctly; training documented; expiry dates checked","Contaminated PPE stored, decontaminated or disposed of properly"]],
+["3.26","Notices and Signs: Electrical, Mechanical, PPE, Traffic, Symbolic",["Standardised signs and notices posted","Signs and notices displayed for information and training"]],
+["3.27","Storage of Flammables/Chemicals and Explosive Material",["Chemical compatibility assessed","Chemical, flammable and explosive stores comply; permits displayed; disposal of old explosives provided","Bonding and earthing for decanting in good condition; continuity measured","Bulk tanks bunded, labelled, drain valves locked closed, integrity monitored","Lightning arrestors fitted; flammable bulk containers earthed"]],
+["3.28","Management of Change and Design Specifications",["Management of change procedure developed and implemented (risk assessment, design, handover)","HSE purchasing specifications approved, known to buyers and followed; MSDS and supplier HSE considered"]],
+["3.29","Contractor and Contracts Control",["Contractor control procedure documented; HSE performance considered at selection","Contractor competence, insurance and registration verified; HSE coordinator assigned","Contractors inducted and subject to scheduled HSE inspections/audits","Contractor agreements in place; HSE liability assessed and managed"]],
+["3.30","Safe Work Procedures",["SWPs developed for high-risk tasks identified through risk assessment/JSA","SWPs include sequence, tools, equipment, PPE and critical HSE steps","SWPs available at point of work, brief and readable; reviewed after incidents"]],
+["3.31","Work Permits",["Written permit procedure available and updated (issue, acceptance, renewal, clearance)","Permits issued and used wherever required; supervisors and employees trained","Permits signed by responsible person; conditions and measurements recorded","Monitoring equipment calibrated; permits signed off at completion, copy retained","Permit copy kept by person doing the work; OHS/emergency teams informed of high-risk jobs"]],
+["3.32","Confined and Enclosed Spaces",["Spaces identified, listed, signposted; locations known to affected persons","Permit to work with atmospheric testing, lifelines, standby person, communication, ventilation","Entry, work and exit controlled; daily task risk assessments; stoppage on breach","Emergency response and rescue established and drilled; persons trained","Permit transfer between shifts; planned task observations conducted"]],
+["3.33","Working at Height/Elevated Positions",["Procedure with permit, task risk assessment and fall protection plan","Fall plan covers anchor points, pre-use inspection, falling objects, rescue","Medical fitness evaluated; persons trained","Daily risk assessments, task observations, stoppage on breach, rescue drills"]],
+["3.34","Trenching and Excavation",["Plan with scope, graphical plan and responsible persons","Pre-task risk assessment (utilities, structures, soil, water, weather, atmosphere, traffic)","Protective systems, utility protection, barricading and signage","Daily recorded inspections before entry; emergency rescue arrangements","Authorisation for deviations; monthly sample audits; stoppage on breach"]]];
+const KEY="gmc-ops-v2",DEF={view:"setup",date:"November 2026",crit:"HSE Operational Controls (IMSC-4.4.6)",loc:"",insp:"",sel:[],r:{},oc:[],concl:"",q:""};
+let st=Object.assign({},DEF);
+try{const x=localStorage.getItem(KEY);if(x)st=Object.assign({},DEF,JSON.parse(x))}catch(e){}
+const $=id=>document.getElementById(id),save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SE=()=>E.filter(e=>st.sel.includes(e[0]));
+function go(v){st.view=v;save();render();window.scrollTo(0,0)}
+function bar(h){$("bar").innerHTML=h}
+function render(){const v=st.view;
+ if(v==="setup")setup();else if(v==="check")check();else report()}
+function setup(){
+ const q=st.q.toLowerCase(),list=E.filter(e=>!q||(e[0]+" "+e[1]).toLowerCase().includes(q));
+ $("app").innerHTML=`<h1>Audit Report Builder</h1><p class="sub">Ghana Manganese Company · Step 1: choose the controls once. They stay saved for every audit until you reset them.</p>
+ <div class="card"><label class="l">Operational controls (${E.length})</label><input type="text" id="q" placeholder="Search e.g. guarding, 3.12" value="${esc(st.q)}">
+ <div class="row"><button class="chip" data-a="all">Select all shown</button><button class="chip" data-a="none">Clear</button><button class="chip" data-a="i2">I-2 Housekeeping (3.6–3.8)</button></div>
+ ${list.map(e=>`<label class="pick"><input type="checkbox" data-id="${e[0]}" ${st.sel.includes(e[0])?"checked":""}><span><b>${e[0]}</b> ${esc(e[1])}<br><small>${e[2].length} criteria</small></span></label>`).join("")||'<p class="mut">No match.</p>'}</div>`;
+ sb()}
+function sb(){const n=st.sel.length;bar(`<button class="btn p" id="build" ${n?"":"disabled"}>Build checklist (${n} control${n===1?"":"s"})</button>`)}
+function check(){
+ let h=`<h1>Checklist</h1><p class="sub">Step 2: fill in the audit details, then tick each criterion. <span id="prog"></span></p>
+ <div class="card"><div class="grid"><div><label class="l">Date</label><input type="text" data-k="date" value="${esc(st.date)}"></div><div><label class="l">Criteria</label><input type="text" data-k="crit" value="${esc(st.crit)}"></div>
+ <div><label class="l">Location</label><input type="text" data-k="loc" placeholder="e.g. HGS" value="${esc(st.loc)}"></div><div><label class="l">Inspector</label><input type="text" data-k="insp" value="${esc(st.insp)}"></div></div></div>`;
+ SE().forEach(e=>{h+=`<div class="card"><div class="sec">${e[0]} ${esc(e[1])}</div>`;
+  e[2].forEach((c,i)=>{const id=e[0]+"."+(i+1),r=st.r[id]||{};
+   h+=`<div class="item" data-id="${id}"><div class="q"><b>${id}</b><span>${esc(c)}</span></div><div class="seg"><button class="y ${r.v==="Y"?"on":""}" data-v="Y">Yes</button><button class="n ${r.v==="N"?"on":""}" data-v="N">No</button><button class="a ${r.v==="A"?"on":""}" data-v="A">N/A</button></div>
+   <input type="text" class="note ${r.v==="Y"||r.v==="N"?"":"hide"}" style="${r.v==="Y"||r.v==="N"?"":"display:none"}" placeholder="${r.v==="N"?"Deviation: what and where":"Achievement note (optional)"}" value="${esc(r.n||"")}"></div>`});
+  h+="</div>"});
+ h+=`<div class="card"><div class="sec">Other concerns</div><p class="mut">Anything observed that is not in the criteria above.</p>
+ <div class="row"><select id="oct" style="width:auto"><option value="D">Deviation</option><option value="A">Achievement</option></select><input type="text" id="oci" placeholder="Describe the concern and where" style="flex:1;min-width:180px"><button class="chip" id="ocadd">Add</button></div>
+ <div id="ocl">${st.oc.map((o,i)=>`<div class="oc"><span class="tag" style="color:var(--${o.k==="D"?"no":"yes"})">${o.k==="D"?"DEVIATION":"ACHIEVEMENT"}</span><span>${esc(o.t)}</span><button class="chip" data-rm="${i}" style="min-width:0">✕</button></div>`).join("")}</div></div>
+ <div class="card"><label class="l">Conclusion (leave blank for the standard wording)</label><textarea id="concl">${esc(st.concl)}</textarea></div>`;
+ $("app").innerHTML=h;prog();
+ bar(`<button class="btn" id="resetc" data-l="Reset controls">Reset controls</button><button class="btn" id="reset" data-l="New audit">New audit</button><button class="btn p" id="gen">Generate report</button>`)}
+function prog(){const its=SE().flatMap(e=>e[2].map((c,i)=>e[0]+"."+(i+1)));const d=its.filter(x=>st.r[x]&&st.r[x].v).length,n=its.filter(x=>st.r[x]&&st.r[x].v==="N").length,p=$("prog");
+ if(p)p.textContent=`${d}/${its.length} answered · ${n+st.oc.filter(o=>o.k==="D").length} deviations`}
+function data(){const ach=[],dev=[];SE().forEach(e=>e[2].forEach((c,i)=>{const r=st.r[e[0]+"."+(i+1)]||{},n=(r.n||"").trim();
+ if(r.v==="Y")ach.push(n||c);if(r.v==="N")dev.push(n||"Non-compliance: "+c+".")}));
+ st.oc.forEach(o=>(o.k==="D"?dev:ach).push(o.t));
+ const concl=(st.concl||"").trim()||(dev.length?"Ensure that all identified deviations are corrected as soon as reasonably possible.":"No deviations were identified. Continue to maintain the standards observed.");
+ return{ach,dev,concl,scope:SE().map(e=>e[0]+" "+e[1])}}
+function report(){const{ach,dev,concl,scope}=data(),li=a=>(a.length?a:["None recorded."]).map(x=>`<li>${esc(x)}</li>`).join("");
+ $("app").innerHTML=`<div class="rep"><h2>Audit Report</h2><table><tr><td>Date:</td><td>${esc(st.date)}</td></tr><tr><td>Criteria:</td><td>${esc(st.crit)}</td></tr><tr><td>Scope:</td><td><ul>${scope.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></td></tr><tr><td>Location:</td><td>${esc(st.loc)}</td></tr>${st.insp?`<tr><td>Inspector:</td><td>${esc(st.insp)}</td></tr>`:""}</table>
+ <h4 class="u">EXECUTIVE SUMMARY</h4><p>The objective of the Audit was to verify compliance with the scope above as specified in the ${esc(st.crit)} criteria.</p>
+ <h4 class="u">Audit FINDINGS</h4><h4>Achievements</h4><ul>${li(ach)}</ul><h4>Deviations</h4><ul>${li(dev)}</ul><h4>Conclusion</h4><p>${esc(concl)}</p></div><div id="msg"></div>`;
+ bar(`<button class="btn" id="back">Back to checklist</button><button class="btn" id="copy">Copy text</button><button class="btn p" id="dl">Download Word (.docx)</button>`)}
+const flash=m=>{const x=$("msg");if(x)x.textContent=m};
+document.addEventListener("click",async e=>{const t=e.target.closest("button,input[type=checkbox]");if(!t)return;
+ if(t.dataset.a){const q=st.q.toLowerCase(),sh=E.filter(x=>!q||(x[0]+" "+x[1]).toLowerCase().includes(q)).map(x=>x[0]);
+  if(t.dataset.a==="all")st.sel=[...new Set([...st.sel,...sh])];if(t.dataset.a==="none")st.sel=[];if(t.dataset.a==="i2")st.sel=["3.6","3.7","3.8"];save();return setup()}
+ if(t.dataset.id!==undefined&&t.type==="checkbox"){const id=t.dataset.id;st.sel=t.checked?[...st.sel,id]:st.sel.filter(x=>x!==id);st.sel.sort((a,b)=>parseInt(a.slice(2))-parseInt(b.slice(2)));save();return sb()}
+ if(t.id==="build")return go("check");const arm=()=>{if(t.dataset.arm!=="1"){t.dataset.arm="1";t.textContent="Tap again to confirm";setTimeout(()=>{t.dataset.arm="";t.textContent=t.dataset.l},3500);return true}return false};
+ if(t.id==="resetc"){if(arm())return;st=Object.assign({},DEF);save();return render()}if(t.id==="gen")return go("report");if(t.id==="back")return go("check");
+ if(t.dataset.v){const id=t.closest(".item").dataset.id,r=st.r[id]=st.r[id]||{};r.v=r.v===t.dataset.v?"":t.dataset.v;save();const y=scrollY;check();scrollTo(0,y);return}
+ if(t.id==="ocadd"){const i=$("oci"),s=i.value.trim();if(!s)return;st.oc.push({t:s,k:$("oct").value});save();const y=scrollY;check();scrollTo(0,y);return}
+ if(t.dataset.rm!==undefined){st.oc.splice(+t.dataset.rm,1);save();const y=scrollY;check();scrollTo(0,y);return}
+ if(t.id==="reset"){if(arm())return;st=Object.assign({},DEF,{sel:st.sel,crit:st.crit,view:"check"});save();return render()}
+ if(t.id==="copy"){const{ach,dev,concl,scope}=data();const x=`AUDIT REPORT\nDate: ${st.date}\nCriteria: ${st.crit}\nScope: ${scope.join("; ")}\nLocation: ${st.loc}\n\nEXECUTIVE SUMMARY\nThe objective of the Audit was to verify compliance with the scope above as specified in the ${st.crit} criteria.\n\nAUDIT FINDINGS\nAchievements\n${ach.map(a=>"- "+a).join("\n")||"- None recorded."}\nDeviations\n${dev.map(a=>"- "+a).join("\n")||"- None recorded."}\nConclusion\n${concl}`;
+  try{await navigator.clipboard.writeText(x);flash("Report text copied.")}catch(_){flash("Copy blocked here. Select the text above instead.")}return}
+ if(t.id==="dl")return dl()});
+document.addEventListener("input",e=>{const t=e.target;
+ if(t.id==="q"){st.q=t.value;const p=t.selectionStart;setup();const q=$("q");q.focus();q.setSelectionRange(p,p);return}
+ if(t.dataset.k){st[t.dataset.k]=t.value;save();return}
+ if(t.classList.contains("note")){const id=t.closest(".item").dataset.id;(st.r[id]=st.r[id]||{}).n=t.value;save();return}
+ if(t.id==="concl"){st.concl=t.value;save()}});
+async function dl(){
+ if(!window.docx){flash("Word export library did not load. Use Copy text.");return}
+ const{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,BorderStyle,AlignmentType,LevelFormat}=window.docx,{ach,dev,concl,scope}=data();
+ const F="Calibri",b={style:BorderStyle.SINGLE,size:4,color:"000000"},bd={top:b,bottom:b,left:b,right:b};
+ const P=(t,o={})=>new Paragraph({spacing:{before:o.b||0,after:o.a??100},alignment:o.c?AlignmentType.CENTER:undefined,children:[new TextRun({text:t,font:F,size:o.s||22,bold:o.bold,italics:o.i,underline:o.u?{}:undefined})]});
+ const BL=t=>new Paragraph({numbering:{reference:"bl",level:0},children:[new TextRun({text:t,font:F,size:22})]});
+ const cell=(ch,w,bold)=>new TableCell({width:{size:w,type:WidthType.DXA},borders:bd,margins:{top:70,bottom:70,left:110,right:110},children:Array.isArray(ch)?ch:[P(ch,{bold,a:0})]});
+ const row=(k,v)=>new TableRow({children:[cell(k,1700,true),cell(v,8485)]});
+ const rows=[row("Date:",st.date),row("Criteria:",st.crit),new TableRow({children:[cell("Scope:",1700,true),cell(scope.map(BL),8485)]}),row("Location:",st.loc)];if(st.insp)rows.push(row("Inspector:",st.insp));
+ const lst=a=>(a.length?a:["None recorded."]).map(BL);
+ const doc=new Document({numbering:{config:[{reference:"bl",levels:[{level:0,format:LevelFormat.BULLET,text:"•",alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:540,hanging:270}}}}]}]},
+ sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1000,bottom:1000,left:860,right:860}}},children:[
+ P("GHANA MANGANESE COMPANY LIMITED",{c:1,bold:1,s:28,a:60}),P("Audit Report",{c:1,bold:1,i:1,s:32,a:160}),new Table({width:{size:10185,type:WidthType.DXA},columnWidths:[1700,8485],rows}),
+ P("EXECUTIVE SUMMARY",{bold:1,u:1,s:20,b:300}),P("The objective of the Audit was to verify compliance with the scope above as specified in the "+st.crit+" criteria.",{s:20}),
+ P("Audit FINDINGS",{bold:1,u:1,s:20,b:200}),P("Achievements",{bold:1,s:20,b:100}),...lst(ach),P("Deviations",{bold:1,s:20,b:200}),...lst(dev),P("Conclusion",{bold:1,s:20,b:240}),P(concl,{s:20})]}]});
+ try{const blob=await Packer.toBlob(doc),u=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=u;a.download=`Audit_Report_${(st.loc||"GMC").replace(/[^\w-]+/g,"_")}.docx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);flash("Saved to your downloads.")}catch(e){flash("Could not create the file. Use Copy text.")}}
+render();
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script></body></html>
